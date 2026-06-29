@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader, Dataset, Subset
 from torchvision.ops import box_iou  # optional (you also have your own IoU below)
 from tqdm.auto import tqdm
 from champ_weight_loader import load_champ_weights_into_model
+from pathlib import Path
 
 import structure
 import export
@@ -881,7 +882,9 @@ def main():
     ).to(device)
 
 
-    INIT_HPP = r"\weights.hpp" 
+    # INIT_HPP = r"\weights.hpp"  
+    BASE_DIR = Path(__file__).resolve().parent
+    INIT_HPP = str(BASE_DIR / "initial_weight.h")
     USE_CHAMP_INIT = True
     DO_BNQ_CALIB = False   
 

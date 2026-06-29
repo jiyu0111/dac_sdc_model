@@ -252,21 +252,21 @@ def write_weights_hpp_from_model(model: structure.HLSLikeQATDetector, out_path: 
 def export_all_outputs(model, out_dir="export_out"):
     os.makedirs(out_dir, exist_ok=True)
 
-    # 1) 軟體可用：PyTorch state_dict（可推論、可續訓）
-    torch.save(model.state_dict(), os.path.join(out_dir, "qat_model_state.pth"))
+    # # 1) 軟體可用：PyTorch state_dict（可推論、可續訓）
+    # torch.save(model.state_dict(), os.path.join(out_dir, "qat_model_state.pth"))
 
-    # 2) 軟體也可用：量化後整數參數（不打包，方便 numpy/C++ 自己吃）
-    q = structure.export_hls_params(model)
-    torch.save(q, os.path.join(out_dir, "quant_params.pt"))
+    # # 2) 軟體也可用：量化後整數參數（不打包，方便 numpy/C++ 自己吃）
+    # q = structure.export_hls_params(model)
+    # torch.save(q, os.path.join(out_dir, "quant_params.pt"))
 
-    # npz 版本（更通用）
-    np_dict = {}
-    for k,v in q.items():
-        if torch.is_tensor(v):
-            np_dict[k] = v.detach().cpu().numpy()
-        else:
-            np_dict[k] = np.array(v)
-    np.savez(os.path.join(out_dir, "quant_params.npz"), **np_dict)
+    # # npz 版本（更通用）
+    # np_dict = {}
+    # for k,v in q.items():
+    #     if torch.is_tensor(v):
+    #         np_dict[k] = v.detach().cpu().numpy()
+    #     else:
+    #         np_dict[k] = np.array(v)
+    # np.savez(os.path.join(out_dir, "quant_params.npz"), **np_dict)
 
     # 3) HLS 可直接替換的 weights.hpp
     write_weights_hpp_from_model(model, os.path.join(out_dir, "output__150_200_250_nhn.hpp"))

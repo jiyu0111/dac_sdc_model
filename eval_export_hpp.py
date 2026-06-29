@@ -6,23 +6,6 @@
 #   - 建立同一份 QAT 模型 (structure.HLSLikeQATDetector)
 #   - 呼叫 evaluate.evaluate_detector() 跑 mAP/precision/recall
 
-# 你只要把這支檔案放在 train.py / evaluate.py / structure.py 同一個資料夾下即可。
-
-# Usage (PowerShell):
-#   python eval_export_hpp.py `
-#     --weights_hpp .\export_out\weights.hpp `
-#     --img_dir C:\\Users\\USER\\Desktop\\model\\JPEGImages `
-#     --label_dir C:\\Users\\USER\\Desktop\\model\\label
-
-# 一次跑 export_out 內所有 .hpp：
-#   python eval_export_hpp.py `
-#     --weights_dir .\export_out `
-#     --img_dir C:\\Users\\USER\\Desktop\\model\\JPEGImages `
-#     --label_dir C:\\Users\\USER\\Desktop\\model\\label
-
-# (如果你想直接用 PyTorch state_dict 而不是 .hpp：)
-#   python eval_export_hpp.py --state_dict .\export_out\qat_model_state.pth --img_dir ... --label_dir ...
-# """
 
 from __future__ import annotations
 

@@ -136,9 +136,9 @@ def main():
 
     print("\n[SUMMARY] total_mismatch =", total)
     if total == 0:
-        print("=> ✅ weight 反解/再打包完全一致（loader + export packing 都對）")
+        print("=>  weight 反解/再打包完全一致（loader + export packing 都對）")
     else:
-        print("=> ❌ mismatch > 0：優先檢查 nibble packing / kr,kc 順序 / PE blocking / inc,bias 取值")
+        print("=>  mismatch > 0：優先檢查 nibble packing / kr,kc 順序 / PE blocking / inc,bias 取值")
 
 
 if __name__ == "__main__":

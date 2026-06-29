@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import json
 import random
@@ -308,7 +307,7 @@ def yolo_loss_v2(
     obj_t, tx_t, ty_t, tw_t, th_t, cls_id_t, gt_idx_t = targets
     pos = obj_t > 0.5
 
-    # --- decode for ignore mask: 務必跟上面同一套 scale ---
+    
     pred_boxes, pred_obj, _ = decode_yolo_head(
         y_pred,
         anchors,
@@ -329,7 +328,7 @@ def yolo_loss_v2(
             if not pos_b.any():
                 continue
 
-            # 每個正樣本對應的 GT index（build_yolo_targets_v2 存的）
+           
             gt_idx = gt_idx_t[b][pos_b]  
             valid = gt_idx >= 0
             if not valid.any():
@@ -339,7 +338,7 @@ def yolo_loss_v2(
             gb = gt[gt_idx[valid]]                    # (K,4)
             iou = iou_one_to_one(pb, gb).detach().clamp(0, 1)  # (K,)
 
-            # 把 obj target 換成 IoU
+            
             tmp = obj_t_soft[b][pos_b]
             tmp[valid] = 0.5 + 0.5 * iou
             obj_t_soft[b][pos_b] = tmp 
@@ -401,9 +400,6 @@ def yolo_loss_v2(
 
 
 
-# =============================
-# Postprocess / Decode (match ultraspeed notebook)
-# =============================
 @torch.no_grad()
 def decode_yolo_head(
     y_pred,
@@ -609,7 +605,7 @@ def dump_debug(
     max_det=5,
     agnostic_nms=False,
     round_like_hw=True,
-    save_path_orig=True,   # e.g. "debug_pred_orig.jpg"
+    save_path_orig=True,  
 ):
     model.eval()
 
@@ -624,7 +620,7 @@ def dump_debug(
     B, _, GH, GW = y.shape
     A = len(anchors)
 
-    # ---------- 3) decode all boxes (保留原本的) ----------
+    
     boxes_all, obj_all, cls_logits_all = decode_yolo_head(
         y,
         anchors,
@@ -741,7 +737,6 @@ def dump_debug(
     ps20 = pred["scores"]
     pc20 = pred["classes"]
 
-    # ---------- 8) draw (修正：在「同一張 vis」上畫完再存) ----------
     rgb = (img.permute(1, 2, 0).cpu().numpy()).clip(0, 255).astype(np.uint8)
     vis = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
@@ -845,9 +840,9 @@ def main():
 
     # dataset / dataloader 先建好（等下要做 bnq calibration 用）
     ds_all = JsonDetDataset(
-        img_dir=r"C:\Users\USER\Desktop\model\JPEGImages",
-        label_dir=r"C:\Users\USER\Desktop\model\label",
-        img_size=(640, 320),
+        img_dir=r"image path", #data could be found at https://drive.google.com/file/d/1ceQ5y_rCReSZ26HzzCf2muDNbovjyl5k/view?usp=share_link
+        label_dir=r"label path",#data could be found at https://drive.google.com/file/d/1ceQ5y_rCReSZ26HzzCf2muDNbovjyl5k/view?usp=share_link
+        img_size=(640, 320), 
     )
 
     indices = list(range(len(ds_all)))
@@ -886,7 +881,7 @@ def main():
     ).to(device)
 
 
-    INIT_HPP = r"C:\Users\USER\Desktop\dac-sdc-2023-designs\src\weights.hpp" 
+    INIT_HPP = r"\weights.hpp" 
     USE_CHAMP_INIT = True
     DO_BNQ_CALIB = False   
 
@@ -924,10 +919,10 @@ def main():
         model, ds_all, device, ANCHORS,
         sample_index=0,
         save_path="debug_pred_resize.jpg",
-        save_path_orig="debug_pred_orig.jpg",   # <-- 跟 infer 最好比
+        save_path_orig="debug_pred_orig.jpg",  
         conf_th=0, obj_th=0.30, iou_th=0.01, max_det=5,
         agnostic_nms=False,
-        round_like_hw=True,                     # <-- 跟 infer 的 rint/int32 行為更接近
+        round_like_hw=True,                   
     )
 
     # -------------------------

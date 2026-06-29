@@ -1,13 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-champ_weight_loader.py (FIXED)
-
-重點修正：
-- conv1~conv7 的 4-bit weight 在 HLS conv2d.hpp 裡是以 ap_uint 方式使用，並用 subdata 做 offset 校正
-  => 等價於 w_eff = (nibble - 8)  (offset-binary)
-- conv0 / conv8 (head) 仍用 two's complement 解 nibble 較合理
-"""
-
 from __future__ import annotations
 import re
 import numpy as np
@@ -54,10 +44,6 @@ def _read_text(path: str) -> str:
         return f.read()
 
 def _extract_array_block(text: str, name: str) -> str:
-    """
-    抓出 `name = { ... };` 之間的大括號內容（純文字），讓我們把 hex 全抓出來。
-    """
-    # 很寬鬆：從 name 開始抓到第一個 ';'
     m = re.search(rf"{re.escape(name)}\s*=\s*\{{", text)
     if not m:
         raise KeyError(f"cannot find array: {name}")
@@ -69,11 +55,6 @@ def _extract_array_block(text: str, name: str) -> str:
 
 
 def _load_conv0_w(text: str) -> torch.Tensor:
-    """
-    conv_0_w_new[16][3][3] each is ap_uint<12> packing 3*nibble (RGB channel weights)
-    HLS conv0 用 ap_int<4> reinterpret bits => two's complement
-    return: (16,3,3,3) int8
-    """
     block = _extract_array_block(text, "const ap_uint<12>conv_0_w_new[16][3][3]")
     hexes = _re_hex.findall(block)
     if len(hexes) != 16 * 3 * 3:
@@ -95,14 +76,6 @@ def _load_conv0_w(text: str) -> torch.Tensor:
 
 
 def _load_conv3x3_w(text: str, layer: int, pe: int, in_ch: int, out_ch: int, simd: int, mode: str) -> torch.Tensor:
-    """
-    conv_{layer}_w_new[pe][3][K]  where K = infold*(out_ch/pe)
-    這裡照你的 export.py / HLS config 的 indexing 去還原成 (out_ch,in_ch,3,3)
-
-    mode:
-      - conv1~7: "offset"
-      - (如果你有別的設計可改)
-    """
     name = f"const ap_uint<{simd*4}>conv_{layer}_w_new"
     # weights.hpp 裡實際 word width 是 64/128/256，但 simd*4 也會對上
     # 用比較保守方式：直接搜 conv_{layer}_w_new[...] 的宣告行
@@ -143,11 +116,6 @@ def _load_conv3x3_w(text: str, layer: int, pe: int, in_ch: int, out_ch: int, sim
 
 
 def _load_head_w(text: str, pe: int = 2, in_ch: int = 64, out_ch: int = 72, simd: int = 8) -> torch.Tensor:
-    """
-    conv_8_w_new[2][288], each ap_uint<32> packing 8*nibble
-    HLS head 用 ap_int<4> reinterpret bits => two's complement
-    return: (72,64,1,1)
-    """
     m = re.search(r"const ap_uint<32>conv_8_w_new\[2\]\[288\]\s*=\s*\{", text)
     if not m:
         raise KeyError("cannot find conv_8_w_new")
@@ -219,7 +187,7 @@ def load_champ_weights_into_model(model, weights_hpp_path: str):
     model.head.conv.weight.data.copy_(_load_head_w(text).to(model.head.conv.weight.data.dtype))
 
     # ---- bn inc/bias ----
-    # 這些 name_pat 要跟 weights.hpp 宣告行一致（用比較寬鬆 regex）
+    # 這些 name_pat 要跟 weights.hpp 宣告行一致
     model.bnq0.inc_f.data.copy_(_load_vec_int(text, r"const ap_int<15>\s*conv_0_inc_new\[16\]\[1\]", out_ch=16, pe=16).to(model.bnq0.inc_f.data.dtype))
     model.bnq0.bias_f.data.copy_(_load_vec_int(text, r"const ap_int<25>\s*conv_0_bias_new\[16\]\[1\]", out_ch=16, pe=16).to(model.bnq0.bias_f.data.dtype))
 

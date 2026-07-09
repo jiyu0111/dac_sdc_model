@@ -7,7 +7,7 @@
    Images: data/JPEGImages/*.jpg   
    Labels: data/label/*.json  
    JSON fields: type, x, y, width, height   
-   type 1~7 maps to class 0~6.  
+   type 1\~7 maps to class 0\~6.  
    Before training, please modify IMAGE_DIR and LABEL_DIR in train.py to the downloaded dataset location.    
    Training data could be found at https://drive.google.com/file/d/1ceQ5y_rCReSZ26HzzCf2muDNbovjyl5k/view?usp=share_link which is provided by DAC_SDC Contest 2023(https://dac-sdc.github.io/2023/info/)   
 

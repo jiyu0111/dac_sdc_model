@@ -840,10 +840,14 @@ def main():
     HEAD_BIAS_BITS_NEW = 11
 
     # dataset / dataloader 先建好（等下要做 bnq calibration 用）
-    ds_all = JsonDetDataset(
-        img_dir=r"image path", #data could be found at https://drive.google.com/file/d/1ceQ5y_rCReSZ26HzzCf2muDNbovjyl5k/view?usp=share_link
-        label_dir=r"label path",#data could be found at https://drive.google.com/file/d/1ceQ5y_rCReSZ26HzzCf2muDNbovjyl5k/view?usp=share_link
-        img_size=(640, 320), 
+
+    IMAGE_DIR = r"your/path/to/JPEGImages"#data could be found at https://drive.google.com/file/d/1ceQ5y_rCReSZ26HzzCf2muDNbovjyl5k/view?usp=share_link
+    LABEL_DIR = r"your/path/to/label"#data could be found at https://drive.google.com/file/d/1ceQ5y_rCReSZ26HzzCf2muDNbovjyl5k/view?usp=share_link
+
+    ds_all = JsonDetDataset(  
+        img_dir=IMAGE_DIR,
+        label_dir=LABEL_DIR,
+        img_size=(640, 320),
     )
 
     indices = list(range(len(ds_all)))
@@ -884,7 +888,7 @@ def main():
 
     # INIT_HPP = r"\weights.hpp"  
     BASE_DIR = Path(__file__).resolve().parent
-    INIT_HPP = str(BASE_DIR / "initial_weight.h")
+    INIT_HPP = str(BASE_DIR / "initial_weights.hpp")
     USE_CHAMP_INIT = True
     DO_BNQ_CALIB = False   
 
@@ -937,7 +941,7 @@ def main():
         if epoch == WARMUP_EPOCHS:
             set_head_only(model, False)
             opt = torch.optim.Adam(model.parameters(), lr=5e-5)
-            print("[stage] unfreeze all, lr=1e-4")
+            print("[stage] unfreeze all, lr=5e-5    ")
 
         running = 0.0
         nstep = 0

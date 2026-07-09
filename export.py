@@ -269,5 +269,5 @@ def export_all_outputs(model, out_dir="export_out"):
     # np.savez(os.path.join(out_dir, "quant_params.npz"), **np_dict)
 
     # 3) HLS 可直接替換的 weights.hpp
-    write_weights_hpp_from_model(model, os.path.join(out_dir, "output__150_200_250_nhn.hpp"))
-    print(f"[OK] exported to: {out_dir}/ (weights.hpp, qat_model_state.pth, quant_params.npz/.pt)")
+    write_weights_hpp_from_model(model, os.path.join(out_dir, "final_weight.hpp"))
+    print(f"[OK] exported to: {out_dir}")
